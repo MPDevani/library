@@ -28,7 +28,7 @@ class Directory extends React.Component{
 		Book.getAllBooks(function(books){
 			view.state.books = books
 			// TODO(maria): uncomment this line once we use server side.
-			// view.setState(view.state)
+			view.setState(view.state)
 		})
 		
 	}
@@ -48,7 +48,9 @@ class Directory extends React.Component{
 	returnBook(event){
 		event.preventDefault();
 		User.getUserByName(this.state.returnUserForm.returnUserName, function(user) {
-			ReactDOM.render(<Return user={user}/>, document.getElementById('app'))
+			user.getAllBooksByUser(function(books) {
+				ReactDOM.render(<Return user={user} books={books}/>, document.getElementById('app'))
+			})
 		})
 	}
 

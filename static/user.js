@@ -1,31 +1,40 @@
-let users = {};
-
 class User {
-	constructor(name) {
+	constructor(name, id) {
 		this.name = name;
-		this.books = [];
+		this.id = id;
 		
 	}
 
 	checkoutBook(book, callback){
-		this.books.push(book)
-		book.checkedOut++;
-		callback(book);
+	$.post('/user/' + this.id + '/book/' + book.id, function(data) {
+			if (data.error) {
+				console.log("Checkout failed: " + data.error)
+				callback(false);
+			} else {
+				console.log("Checkout succeeded: " + data.success)
+				callback(true);
+			}
+		})
 	}
 
-	returnBook(book, callback){
-		for(let i = 0; i < this.books.length; i++){
-			if(book === this.books[i]){
-				this.books.pop(book)
-			}
-		}
-		book.checkedOut--;
-		callback(book);
+
+	returnBook(book, callback){ //explain ajax
+		$.ajax({
+			url: '/user/' + this.id + '/book/' + book.idNumber,
+			type: 'DELETE',
+			success: callback
+		})
 	}
 	
-	getAllBooksByUser(callback){
-		callback(this.books);
-	}
+	getAllBooksByUser(callback){ //explain why this is so different from checkoutBook
+	$.get('/user/' + this.id + '/book', function(data){
+		if(data.error){
+			console.log(data.error)
+		} 
+			callback(data.books)
+	})
+	
+}
 
 	// This function will retrieve the user with the given name from the server.
 	// If the user is not stored on the server, it will create a new user.
@@ -35,10 +44,9 @@ class User {
 	//    console.log(user.name);
 	// })
 	static getUserByName(name, callback){
-		callback(users[name]);
+		$.post('/user',{userName: name},function(data){
+			callback(new User(data.name, data.id))
+		})
 	}
 }
 
-users['Maria'] = new User('Maria')
-users['Shehzan'] = new User('Shehzan')
-users['Yogi'] = new User('Yogi')

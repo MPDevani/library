@@ -1,17 +1,17 @@
-let books = [];
-
 class Book {
-	constructor(title, description,checkedOut, quantity) {
+	constructor(title, description,checkedOut, id, quantity) {
 		this.title = title;
 		this.description = description
 		this.checkedOut =  checkedOut
+		this.id = id
 		this.quantity = quantity
 	}
 
 	save(callback){
-		books.push(this);
-		callback(this);
-	}
+		$.post('/book', function(data){
+			data: this
+		}, callback); 
+	} // explain what data:this would do..
 
 	update(callback) {
 		callback(this);
@@ -19,10 +19,20 @@ class Book {
 
 
 	static getAllBooks(callback){
-		callback(books);
+		$.get('/books',function(data){
+			let books = data.map(function(book){
+				return new Book(
+					book.title,
+					book.description,
+					Number(book.checkedOut),
+					Number(book.idNumber),
+					Number(book.quantity)
+					)
+			})
+			callback(books)	
+		})
 	}
 }
 
-books.push(new Book('Harry Potter','Boy Wizard', 0, 1));
-books.push(new Book('Lord of the Rings','stupid ring', 0, 1))
-books.push(new Book('Pride and Prejudice', 'annoying guy', 0, 1))
+
+

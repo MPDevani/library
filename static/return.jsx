@@ -10,7 +10,7 @@ class Return extends React.Component{
 			let user = this.props.user;
 			let element = event.target;
 			let id = Number(element.dataset.index)
-			let book = this.props.user.books[id]
+			let book = this.props.books[id]
 			user.returnBook(book, function(book) {
 				ReactDOM.render(<Directory/>,
 		  			document.getElementById('app'))
@@ -20,7 +20,7 @@ class Return extends React.Component{
 	render(){
 		let clickHandler = this.handleClick
 		let user = this.props.user;
-		let books = this.props.user.books
+		let books = this.props.books
 		console.log(user)
 		console.log(books)
 		let listOfBooks = books.map(function(book, index){
