@@ -9,6 +9,10 @@ class Directory extends React.Component{
 		this.updateInputQuantity = this.updateInputQuantity.bind(this)
 		this.donateBook = this.donateBook.bind(this)
 		this.bookEdit = this.bookEdit.bind(this)
+		this.roomRental = this.roomRental.bind(this)
+		this.updateRoomRental = this.updateRoomRental.bind(this)
+		this.updateUnbooking = this.updateUnbooking.bind(this)
+		this.unbookRoom = this.unbookRoom.bind(this)
 		let view = this
 		this.state = {
 			returnUserForm: {
@@ -22,7 +26,17 @@ class Directory extends React.Component{
 
 			},
 
-			books: []
+			books: [],
+
+			rooms: [],
+
+			roomRental: { 
+				name: 'insert name here'
+			},
+
+			unbook: {
+				name: 'insert name here'
+			}
 
 		}
 		Book.getAllBooks(function(books){
@@ -30,14 +44,20 @@ class Directory extends React.Component{
 			// TODO(maria): uncomment this line once we use server side.
 			view.setState(view.state)
 		})
-		
-	}
 
+		Rooms.getAllRooms(function(rooms){
+			view.state.rooms = rooms
+			view.setState(view.state)
+			console.log(view.state.rooms)
+		})
+
+		
+	}	
+	
 	handleClick(event) {
 		let element = event.target;
 		let id = Number(element.dataset.index);
 		let book = this.state.books[id];
-		console.log(book);
 		// 1) We need to find the element that the person clicked
 		// 2) We need to find the book that the element represents
 		// 3) We need to pass the book to the checkout component
@@ -71,6 +91,16 @@ class Directory extends React.Component{
 
 	updateInputQuantity(event){
 		this.state.donateBookForm.quantity = event.target.value
+		this.setState(this.state)
+	}
+
+	updateRoomRental(event){
+		this.state.roomRental.name = event.target.value
+		this.setState(this.state)
+	}
+
+	updateUnbooking(event){
+		this.state.unbook.name = event.target.value
 		this.setState(this.state)
 	}
 
@@ -112,12 +142,33 @@ class Directory extends React.Component{
 		this.setState(this.state)
 	}
 
+	roomRental(event){
+		event.preventDefault();
+		console.log(this.state.rooms)
+		let rooms = this.state.rooms
+		User.getUserByName(this.state.roomRental.name, function(user){
+			ReactDOM.render(<Room user={user} rooms={rooms}/>, document.getElementById('app'))
+		})	
+	}		
+
+	unbookRoom(event){
+		event.preventDefault();
+		User.getUserByName(this.state.unbook.name, function(user){
+			user.getAllRoomsByUser(function(rooms){
+				ReactDOM.render(<Unbook user={user} rooms={rooms}/>, document.getElementById('app'))
+			})
+			
+		})
+
+	}
+
 	render(){
 		let clickHandler = this.handleClick
 		let bookEdits = this.bookEdit
 		let returns = this.returnBook
 		let donateBook = this.donateBook
-		console.log(this.state.books)
+		let roomRental = this.roomRental
+		let unbookRoom = this.unbookRoom
 		let bookList = this.state.books.map(function(list, index){
 			if(list.checkedOut == list.quantity){
 				return(
@@ -160,6 +211,18 @@ class Directory extends React.Component{
 				Quantity <input type = 'text' value= {this.state.donateBookForm.quantity} onChange={event => this.updateInputQuantity(event)}/>
 				<br/><br/><input type = 'Submit'/>
 			</form>
+			<form onSubmit = {roomRental}>
+              <br/>
+				Rent a Room (enter your name): <input type = 'text' value= {this.state.roomRental.name} onChange={event => this.updateRoomRental(event)}/>
+				<input type = 'Submit'/>
+			</form>
+			<br/>
+			<form onSubmit = {unbookRoom}>
+              <br/>
+				Unbook Room (enter your name): <input type = 'text' value= {this.state.unbook.name} onChange={event => this.updateUnbooking(event)}/>
+				<input type = 'Submit'/>
+			</form>
+			<br/>
 		</div>	
 	)}
 }

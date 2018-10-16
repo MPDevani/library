@@ -3,6 +3,8 @@ const app = express()
 const {Book} = require('./book.js')
 const {Users} = require('./users.js')
 const {History} = require('./userhistory.js')
+const {Rooms} = require('./rooms.js')
+const {Booking} = require('./booking.js')
 
 let bodyParser = require('body-parser');
 app.use(bodyParser.json());
@@ -14,6 +16,12 @@ new Book('Lord of the Rings','stupid ring', 0,2, 1),
 new Book('Pride and Prejudice', 'annoying guy', 0,3, 1)
 ]
 
+let roomRental = [
+	new Rooms('Room One',false, 1),
+	new Rooms('Room Two',false, 2),
+	new Rooms('Room Three',false, 3)
+]
+let nextRoomId = 4
 let nextIdNumber = 4
 
 let users = {
@@ -24,11 +32,101 @@ let users = {
 let nextUserId = 3
 
 let checkoutHistory = []
+let bookRoom = []
+let nextBookingId = 0
 nextCheckoutID = 0
 
 app.get('/books', function(req,res){
 	res.json(books)
 })
+
+app.get('/rooms', function(req,res){
+	res.json(roomRental)
+})
+
+app.post('/user/:user_id/room/:room_id', function(req,res){
+	let user
+	let room
+
+	for(let userName in users){
+		let userElem = users[userName]
+		if(userElem.id === Number(req.params.user_id)){
+			user = userElem
+		}
+	}
+	if(!user) {
+		res.json({error:'User not found'})
+			return;
+	}
+
+	roomRental.map(function(roomElem){
+		if(roomElem.id === Number(req.params.room_id)){
+			room = roomElem
+		}
+	})
+
+	if(!room){
+		res.json({error:'Room not found'})
+		return;
+	}
+	room.availability = true
+	let roomBooking = new Booking(nextBookingId++,user.id,room.id)
+	bookRoom.push(roomBooking)
+	res.json({success:'success'})
+})
+
+app.get('/user/:user_id/rooms', function(req,res){
+	let user
+	for(let userName in users){
+		let userElem = users[userName]
+		if(userElem.id = Number(req.params.user_id)){
+			user = userElem
+		}
+	}
+
+	if(!user){
+		res.json({error: "User is not found"})
+		return;
+	}
+
+	let bookedRooms = bookRoom.filter(function(record){
+		return record.userId === user.id
+	}).map(function(record){
+		let room;
+		roomRental.forEach(function(roomElem){
+			if(roomElem.id === record.roomId){
+				room = roomElem;
+			}
+		})
+		return room;
+	}).filter(function(room){
+		return room !== undefined;
+	})
+	res.json({
+		success: 'Room was found',
+		rooms: bookedRooms
+	})
+
+})
+
+app.delete('/user/:user_id/room/:room_id', function(req,res){
+	for(let i = 0; i < bookRoom.length; i++){
+		let roomRented = bookRoom[i]
+		if(roomRented.userId === Number(req.params.user_id) &&
+			roomRented.roomId === Number(req.params.room_id)){
+				bookRoom.splice(i, 1)
+		}
+	}
+	roomRental.forEach(function(room){
+		if(room.id === Number(req.params.room_id)){
+			room.availability = false
+			console.log(room.availability)
+		}
+		
+	})
+	res.json({success: "Deleted record."})
+})
+
 
 app.post('/book', function(req,res){
 	let title = req.body.data.title
@@ -51,6 +149,8 @@ app.post('/user', function(req,res){ //why not use get request?
 	}
 	res.json(users[userName])
 })
+
+
 
 app.post('/user/:user_id/book/:book_id', function(req,res){
 	let user;

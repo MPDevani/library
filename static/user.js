@@ -35,6 +35,34 @@ class User {
 	})
 	
 }
+	getAllRoomsByUser(callback){
+		$.get('/user/' + this.id + '/rooms', function(data){
+			if(data.error){
+				console.log(data.error)
+			}
+			callback(data.rooms)
+		})
+	}
+
+	bookRoom(room,callback){
+		$.post('/user/'+ this.id + '/room/' + room.id, function(data){
+			if(data.error){
+				console.log("failed: " + data.error)
+				callback(false)
+			} else {
+				console.log('Success')
+				callback(true)
+			}
+		})
+	}
+
+	unbookRoom(room, callback){
+		$.ajax({
+			url: '/user/' + this.id + '/room/' + room.id,
+			type: 'DELETE',
+			success: callback
+		})
+	}
 
 	// This function will retrieve the user with the given name from the server.
 	// If the user is not stored on the server, it will create a new user.
@@ -43,6 +71,8 @@ class User {
 	// Usage: User.getUserByName("Maria", function(user) {
 	//    console.log(user.name);
 	// })
+
+
 	static getUserByName(name, callback){
 		$.post('/user',{userName: name},function(data){
 			callback(new User(data.name, data.id))
