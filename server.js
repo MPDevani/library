@@ -10,6 +10,14 @@ let bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
+var knex = require('knex')({
+  client: 'mysql',
+  connection: {
+    host : '127.0.0.1',
+    database : 'myapp_test'
+  }
+});
+
 let books = [
 new Book('Harry Potter','Boy Wizard', 0,1, 1),
 new Book('Lord of the Rings','stupid ring', 0,2, 1),
@@ -37,6 +45,15 @@ let nextBookingId = 0
 nextCheckoutID = 0
 
 app.get('/books', function(req,res){
+	knex.select().table('books').then(function(bookData){
+		let allBooks = bookData.map(function(bookData){
+			return new Book(bookData.title,
+							bookData.description,
+							bookData.checkedout,
+							bookData.id,
+							bookData,quantity);
+		}
+	}
 	res.json(books)
 })
 

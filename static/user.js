@@ -57,6 +57,8 @@ class User {
 	}
 
 	unbookRoom(room, callback){
+		// We expected a room object. We got an array of a plain object.
+		console.log(room);
 		$.ajax({
 			url: '/user/' + this.id + '/room/' + room.id,
 			type: 'DELETE',

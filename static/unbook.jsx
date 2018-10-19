@@ -8,8 +8,8 @@ class Unbook extends React.Component{
 	handleClick(event){
 		event.preventDefault();
 		let element = event.target;
-		let id = Number(element.dataset.index);
-		let room = this.props.rooms;
+		let index = Number(element.dataset.index);
+		let room = this.props.rooms[index];
 		let user = this.props.user
 		user.unbookRoom(room, function(roomRented){
 			ReactDOM.render(<Directory/>,
@@ -20,8 +20,8 @@ class Unbook extends React.Component{
 	render(){
 		let clickHandler = this.handleClick
 		let user = this.props.user;
-		let room = this.props.rooms
-		let listOfRooms = room.map(function(room, index){
+		let rooms = this.props.rooms
+		let listOfRooms = rooms.map(function(room, index){
 			return( 	
 			 <div key = {'room_' + index}>
               <h2>{room.description}</h2>
